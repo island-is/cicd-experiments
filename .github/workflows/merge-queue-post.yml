@@ -23,4 +23,6 @@ jobs:
           echo "$GITHUB_CONTEXT"
       - name: Merge queue pre-check
         run: |
+          echo "This will fail"
           sleep 15 && echo "Putting stuff in merge queue now that I am awake"
+          exit 1
