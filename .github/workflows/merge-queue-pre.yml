@@ -20,7 +20,6 @@ jobs:
     # The 'Ready for mergequeue' triggered on merge_group here will block merging untill it has completed with success.
     # (https://medium.com/@kojoru/how-to-set-up-merge-queues-in-github-actions-59381e5f435a)
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' }}
     steps:
       - name: Dump GitHub context
         env:
