@@ -34,6 +34,7 @@ jobs:
 
   post-merge-queue:
     name: Ready for mergequeue
+    if: ${{ github.event_name != 'pull_request' }}
     # The only way to set different required status checks to a pre-queue and a post-queue ,
     # (i.e. before merging and in merge queue), is to have two jobs with the same name, one that triggers on pull_request,
     # and another on merge_group.
