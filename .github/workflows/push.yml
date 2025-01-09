@@ -143,216 +143,216 @@ jobs:
           echo "PRE_CHECK=push"
           echo "PRE_CHECK=push" >> "$GITHUB_OUTPUT"
 
-  prepare:
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
+  # prepare:
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 90
 
-    if: needs.pre-checks.outputs.PRE_CHECK
-    needs:
-      - pre-checks
+  #   if: needs.pre-checks.outputs.PRE_CHECK
+  #   needs:
+  #     - pre-checks
 
-    env:
-      AFFECTED_ALL: ${{ secrets.AFFECTED_ALL }}
-      GIT_BRANCH: ${{ needs.pre-checks.outputs.GIT_BRANCH }}
-      SERVERSIDE_FEATURES_ON: ''
+  #   env:
+  #     AFFECTED_ALL: ${{ secrets.AFFECTED_ALL }}
+  #     GIT_BRANCH: ${{ needs.pre-checks.outputs.GIT_BRANCH }}
+  #     SERVERSIDE_FEATURES_ON: ''
 
-    outputs:
-      CACHE_KEYS: ${{ steps.get-cache.outputs.keys }}
-      TEST_CHUNKS: ${{ steps.test_projects.outputs.CHUNKS }}
-      DOCKER_TAG: ${{ steps.docker_tags.outputs.DOCKER_TAG }}
-      NODE_IMAGE_TAG: ${{ steps.nodejs_image.outputs.NODE_IMAGE_TAG }}
-      LAST_GOOD_BUILD_DOCKER_TAG: ${{ steps.git_nx_base.outputs.LAST_GOOD_BUILD_DOCKER_TAG }}
-      UNAFFECTED: ${{ steps.unaffected.outputs.UNAFFECTED }}
-      BUILD_CHUNKS: ${{ steps.build_map.outputs.BUILD_CHUNKS }}
-      IMAGES: ${{ steps.deploy_map.outputs.IMAGES }}
-      node-modules-hash: ${{ steps.calculate_node_modules_hash.outputs.node-modules-hash }}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
+  #   outputs:
+  #     CACHE_KEYS: ${{ steps.get-cache.outputs.keys }}
+  #     TEST_CHUNKS: ${{ steps.test_projects.outputs.CHUNKS }}
+  #     DOCKER_TAG: ${{ steps.docker_tags.outputs.DOCKER_TAG }}
+  #     NODE_IMAGE_TAG: ${{ steps.nodejs_image.outputs.NODE_IMAGE_TAG }}
+  #     LAST_GOOD_BUILD_DOCKER_TAG: ${{ steps.git_nx_base.outputs.LAST_GOOD_BUILD_DOCKER_TAG }}
+  #     UNAFFECTED: ${{ steps.unaffected.outputs.UNAFFECTED }}
+  #     BUILD_CHUNKS: ${{ steps.build_map.outputs.BUILD_CHUNKS }}
+  #     IMAGES: ${{ steps.deploy_map.outputs.IMAGES }}
+  #     node-modules-hash: ${{ steps.calculate_node_modules_hash.outputs.node-modules-hash }}
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: 'package.json'
 
-      - name: Setup yarn
-        run: corepack enable
+  #     - name: Setup yarn
+  #       run: corepack enable
 
-      - name: Check node version
-        run: |
-          set -euo pipefail
-          node -v
-          ls -l `which node`
+  #     - name: Check node version
+  #       run: |
+  #         set -euo pipefail
+  #         node -v
+  #         ls -l `which node`
 
-      - name: Git refs
-        id: git_refs
-        run: |
-          set -euo pipefail
-          if [[ -n "$GITHUB_BASE_REF" ]]
-          then
-           echo "a PR"
-           GIT_BASE_BRANCH="$GITHUB_BASE_REF"
-          else
-          echo "on main"
-           GIT_BASE_BRANCH=main
-          fi
-          echo GIT_BRANCH="$GIT_BRANCH" >> "$GITHUB_ENV"
-          echo "Base branch is '${GIT_BASE_BRANCH}'"
-          echo GIT_BASE_BRANCH="$GIT_BASE_BRANCH" >> "$GITHUB_ENV"
-          echo "Branch is '${GIT_BRANCH}'"
+  #     - name: Git refs
+  #       id: git_refs
+  #       run: |
+  #         set -euo pipefail
+  #         if [[ -n "$GITHUB_BASE_REF" ]]
+  #         then
+  #          echo "a PR"
+  #          GIT_BASE_BRANCH="$GITHUB_BASE_REF"
+  #         else
+  #         echo "on main"
+  #          GIT_BASE_BRANCH=main
+  #         fi
+  #         echo GIT_BRANCH="$GIT_BRANCH" >> "$GITHUB_ENV"
+  #         echo "Base branch is '${GIT_BASE_BRANCH}'"
+  #         echo GIT_BASE_BRANCH="$GIT_BASE_BRANCH" >> "$GITHUB_ENV"
+  #         echo "Branch is '${GIT_BRANCH}'"
 
-      - name: Checking out relevant branches for a pre-release
-        if: needs.pre-checks.outputs.PRE_CHECK && needs.pre-checks.outputs.PRE_RELEASE == 'true'
-        run: |
-          echo "Feature Name: '$FEATURE_NAME'"
-          echo "sha: '$GITHUB_SHA'"
+  #     - name: Checking out relevant branches for a pre-release
+  #       if: needs.pre-checks.outputs.PRE_CHECK && needs.pre-checks.outputs.PRE_RELEASE == 'true'
+  #       run: |
+  #         echo "Feature Name: '$FEATURE_NAME'"
+  #         echo "sha: '$GITHUB_SHA'"
 
-          git checkout main
-          git checkout "$GITHUB_SHA"
+  #         git checkout main
+  #         git checkout "$GITHUB_SHA"
 
-      - name: Checking out relevant branches for a PR
-        if: needs.pre-checks.outputs.PRE_CHECK && needs.pre-checks.outputs.PRE_CHECK == 'feature-deploy' && !(needs.pre-checks.outputs.PRE_RELEASE == 'true')
-        run: |
-          set -euo pipefail
-          git checkout "$GITHUB_HEAD_REF"
-          git checkout "$GITHUB_BASE_REF"
-          git checkout "$GITHUB_SHA"
+  #     - name: Checking out relevant branches for a PR
+  #       if: needs.pre-checks.outputs.PRE_CHECK && needs.pre-checks.outputs.PRE_CHECK == 'feature-deploy' && !(needs.pre-checks.outputs.PRE_RELEASE == 'true')
+  #       run: |
+  #         set -euo pipefail
+  #         git checkout "$GITHUB_HEAD_REF"
+  #         git checkout "$GITHUB_BASE_REF"
+  #         git checkout "$GITHUB_SHA"
 
-          BASE_SHA="$(git merge-base HEAD "$GITHUB_BASE_REF")"
-          HEAD_SHA="$(git merge-base HEAD "$GITHUB_HEAD_REF")"
-          echo "Current base SHA is '$BASE_SHA' and head SHA is '$HEAD_SHA'"
-          echo "{\"base_sha\": \"$BASE_SHA\", \"head_sha\":\"$HEAD_SHA\"}" > event.json
+  #         BASE_SHA="$(git merge-base HEAD "$GITHUB_BASE_REF")"
+  #         HEAD_SHA="$(git merge-base HEAD "$GITHUB_HEAD_REF")"
+  #         echo "Current base SHA is '$BASE_SHA' and head SHA is '$HEAD_SHA'"
+  #         echo "{\"base_sha\": \"$BASE_SHA\", \"head_sha\":\"$HEAD_SHA\"}" > event.json
 
-      - name: Checking out relevant branches for a branch build
-        if: ${{ !(needs.pre-checks.outputs.PRE_CHECK && needs.pre-checks.outputs.PRE_CHECK == 'feature-deploy') }}
-        run: |
-          set -euo pipefail
-          git checkout main
-          git checkout "$GITHUB_SHA"
-
-
-      - name: Generate nodejs image tag
-        id: nodejs_image
-        continue-on-error: false
-        run: |
-          set -euo pipefail
-          export NODE_IMAGE_TAG="$(./scripts/ci/get-node-version.mjs)"
-          echo "NODE_IMAGE_TAG: '${NODE_IMAGE_TAG}'"
-          echo NODE_IMAGE_TAG="${NODE_IMAGE_TAG}" >> "$GITHUB_OUTPUT"
-          echo NODE_IMAGE_TAG="${NODE_IMAGE_TAG}" >> "$GITHUB_ENV"
-          echo "**NODE_IMAGE_TAG** '${NODE_IMAGE_TAG}'" >> "$GITHUB_STEP_SUMMARY"
-      - name: Generate docker image tag
-        id: docker_tags
-        run: |
-          set -euo pipefail
-          export DOCKER_BRANCH_TAG="$(echo "${GIT_BRANCH:0:45}" | tr "/." "-" )"
-          SHA="${{ github.event.pull_request.head.sha }}"
-          echo "SHA='$SHA' retrieved from event"
-          if [[ "$SHA" == "" ]]; then
-            SHA="$GITHUB_SHA"
-            echo "SHA='$SHA', retrived from action environment"
-          fi
-          echo "Using SHA='$SHA' as docker tag SHA"
-          export DOCKER_TAG="${DOCKER_BRANCH_TAG}_${SHA:0:10}_${GITHUB_RUN_NUMBER}"
-          echo "Docker tag will be '${DOCKER_TAG}'"
-          echo DOCKER_TAG="${DOCKER_TAG}" >> "$GITHUB_OUTPUT"
-          echo DOCKER_TAG="$DOCKER_TAG" >> "$GITHUB_ENV"
-          echo "**Monorepo tag:** '${DOCKER_TAG}'" >> "$GITHUB_STEP_SUMMARY"
-
-      - run: |
-          echo HEAD="$GITHUB_SHA" >> "$GITHUB_ENV"
-        id: git_nx_head
-        name: Preparing HEAD tag
+  #     - name: Checking out relevant branches for a branch build
+  #       if: ${{ !(needs.pre-checks.outputs.PRE_CHECK && needs.pre-checks.outputs.PRE_CHECK == 'feature-deploy') }}
+  #       run: |
+  #         set -euo pipefail
+  #         git checkout main
+  #         git checkout "$GITHUB_SHA"
 
 
-      - name: Set Test Everything true
-        run: |
-          echo "TEST_EVERYTHING=true" >> "$GITHUB_ENV"
-        if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'test everything')
+  #     - name: Generate nodejs image tag
+  #       id: nodejs_image
+  #       continue-on-error: false
+  #       run: |
+  #         set -euo pipefail
+  #         export NODE_IMAGE_TAG="$(./scripts/ci/get-node-version.mjs)"
+  #         echo "NODE_IMAGE_TAG: '${NODE_IMAGE_TAG}'"
+  #         echo NODE_IMAGE_TAG="${NODE_IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+  #         echo NODE_IMAGE_TAG="${NODE_IMAGE_TAG}" >> "$GITHUB_ENV"
+  #         echo "**NODE_IMAGE_TAG** '${NODE_IMAGE_TAG}'" >> "$GITHUB_STEP_SUMMARY"
+  #     - name: Generate docker image tag
+  #       id: docker_tags
+  #       run: |
+  #         set -euo pipefail
+  #         export DOCKER_BRANCH_TAG="$(echo "${GIT_BRANCH:0:45}" | tr "/." "-" )"
+  #         SHA="${{ github.event.pull_request.head.sha }}"
+  #         echo "SHA='$SHA' retrieved from event"
+  #         if [[ "$SHA" == "" ]]; then
+  #           SHA="$GITHUB_SHA"
+  #           echo "SHA='$SHA', retrived from action environment"
+  #         fi
+  #         echo "Using SHA='$SHA' as docker tag SHA"
+  #         export DOCKER_TAG="${DOCKER_BRANCH_TAG}_${SHA:0:10}_${GITHUB_RUN_NUMBER}"
+  #         echo "Docker tag will be '${DOCKER_TAG}'"
+  #         echo DOCKER_TAG="${DOCKER_TAG}" >> "$GITHUB_OUTPUT"
+  #         echo DOCKER_TAG="$DOCKER_TAG" >> "$GITHUB_ENV"
+  #         echo "**Monorepo tag:** '${DOCKER_TAG}'" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Set Test Everything false
-        run: echo "TEST_EVERYTHING=false" >> "$GITHUB_ENV"
-        if: github.event_name != 'pull_request' || !contains(github.event.pull_request.labels.*.name, 'test everything')
-
-
-      - name: yarn install
-        run: yarn install
-
-      - name: Preparing BASE tags
-        id: git_nx_base
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HTML_URL: ${{ github.event.pull_request.html_url }}
-        run: |
-          set -euo pipefail
-          if [[ "${{needs.pre-checks.outputs.PRE_CHECK}}" == 'feature-deploy' && "${{needs.pre-checks.outputs.PRE_RELEASE}}" == 'false' ]]; then
-            export HEAD_REF="$GITHUB_HEAD_REF"
-            export BASE_REF="$GITHUB_BASE_REF"
-            export PR_REF="$GITHUB_SHA"
-          else
-            export HEAD_REF="$GIT_BRANCH"
-            export BASE_REF="$GIT_BASE_BRANCH"
-            export PR_REF="not used"
-          fi
-          export WORKFLOW_ID=push
-          export SHELL=/usr/bin/bash
-          source ./scripts/ci/00_prepare-base-tags.sh $(git merge-base HEAD "$GITHUB_BASE_REF")
-          git checkout "$GITHUB_SHA"
-          echo "debug2"
-          echo BASE="$BASE" >> "$GITHUB_ENV"
-          echo LAST_GOOD_BUILD_DOCKER_TAG="${LAST_GOOD_BUILD_DOCKER_TAG}"
-          echo LAST_GOOD_BUILD_DOCKER_TAG="${LAST_GOOD_BUILD_DOCKER_TAG}" >> "$GITHUB_OUTPUT"
-
-      - name: set BRANCH env var
-        run: |
-          echo BRANCH="$GIT_BRANCH"
-          echo BRANCH="$GIT_BRANCH" >> "$GITHUB_ENV"
-      - name: Prepare test targets
-        id: test_projects
-        run: |
-          set -euo pipefail
-          CHUNKS="$(./scripts/ci/generate-chunks.sh test)"
-          if [[ "$CHUNKS" != "[]" ]]; then
-            echo CHUNKS="{\"projects\":$CHUNKS}"
-            echo CHUNKS="{\"projects\":$CHUNKS}" >> "$GITHUB_OUTPUT"
-          fi
+  #     - run: |
+  #         echo HEAD="$GITHUB_SHA" >> "$GITHUB_ENV"
+  #       id: git_nx_head
+  #       name: Preparing HEAD tag
 
 
-      - name: Prepare docker build targets
-        id: build_map
-        run: |
-          set -euo pipefail
-          CHUNKS="$(./scripts/ci/generate-build-chunks.sh docker-express docker-next docker-static docker-playwright docker-jest)"
-          echo "CHUNKS: '$CHUNKS'"
-          if [[ "$CHUNKS" != "[]" ]]; then
-            echo BUILD_CHUNKS="$CHUNKS"
-            echo BUILD_CHUNKS="$CHUNKS" >> "$GITHUB_OUTPUT"
-          fi
+  #     - name: Set Test Everything true
+  #       run: |
+  #         echo "TEST_EVERYTHING=true" >> "$GITHUB_ENV"
+  #       if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'test everything')
 
-      - name: Gather unaffected docker images
-        id: unaffected
-        run: |
-          set -euo pipefail
-          UNAFFECTED="$(./scripts/ci/list-unaffected.sh docker-next docker-express docker-static docker-playwright docker-jest)"
-          echo UNAFFECTED="$UNAFFECTED" >> "$GITHUB_OUTPUT"
+  #     - name: Set Test Everything false
+  #       run: echo "TEST_EVERYTHING=false" >> "$GITHUB_ENV"
+  #       if: github.event_name != 'pull_request' || !contains(github.event.pull_request.labels.*.name, 'test everything')
 
-      - name: check pre-release
-        if: needs.pre-checks.outputs.PRE_RELEASE == 'true'
-        run: |
-          echo "AFFECTED_ALL=7913-$GIT_BRANCH"
-          echo "AFFECTED_ALL=7913-$GIT_BRANCH" >> "$GITHUB_ENV"
 
-      - name: Prepare deployment targets
-        id: deploy_map
-        if: needs.pre-checks.outputs.PRE_CHECK != 'push'
-        run: |
-          set -euo pipefail
-          export BASE="$(git merge-base HEAD "$GITHUB_BASE_REF")"
-          echo $BASE
-          CHUNKS="$(./scripts/ci/generate-build-chunks.sh docker-express docker-next docker-static docker-playwright docker-jest)"
-          echo "CHUNKS: '$CHUNKS'"
-          if [[ "$CHUNKS" != "[]" ]]; then
-            echo "IMAGES="$(echo "$CHUNKS" | jq '.[] | fromjson | .projects' -r | tr '\n' ',')"" >> "$GITHUB_OUTPUT"
-          fi
+  #     - name: yarn install
+  #       run: yarn install
+
+  #     - name: Preparing BASE tags
+  #       id: git_nx_base
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #         HTML_URL: ${{ github.event.pull_request.html_url }}
+  #       run: |
+  #         set -euo pipefail
+  #         if [[ "${{needs.pre-checks.outputs.PRE_CHECK}}" == 'feature-deploy' && "${{needs.pre-checks.outputs.PRE_RELEASE}}" == 'false' ]]; then
+  #           export HEAD_REF="$GITHUB_HEAD_REF"
+  #           export BASE_REF="$GITHUB_BASE_REF"
+  #           export PR_REF="$GITHUB_SHA"
+  #         else
+  #           export HEAD_REF="$GIT_BRANCH"
+  #           export BASE_REF="$GIT_BASE_BRANCH"
+  #           export PR_REF="not used"
+  #         fi
+  #         export WORKFLOW_ID=push
+  #         export SHELL=/usr/bin/bash
+  #         source ./scripts/ci/00_prepare-base-tags.sh $(git merge-base HEAD "$GITHUB_BASE_REF")
+  #         git checkout "$GITHUB_SHA"
+  #         echo "debug2"
+  #         echo BASE="$BASE" >> "$GITHUB_ENV"
+  #         echo LAST_GOOD_BUILD_DOCKER_TAG="${LAST_GOOD_BUILD_DOCKER_TAG}"
+  #         echo LAST_GOOD_BUILD_DOCKER_TAG="${LAST_GOOD_BUILD_DOCKER_TAG}" >> "$GITHUB_OUTPUT"
+
+  #     - name: set BRANCH env var
+  #       run: |
+  #         echo BRANCH="$GIT_BRANCH"
+  #         echo BRANCH="$GIT_BRANCH" >> "$GITHUB_ENV"
+  #     - name: Prepare test targets
+  #       id: test_projects
+  #       run: |
+  #         set -euo pipefail
+  #         CHUNKS="$(./scripts/ci/generate-chunks.sh test)"
+  #         if [[ "$CHUNKS" != "[]" ]]; then
+  #           echo CHUNKS="{\"projects\":$CHUNKS}"
+  #           echo CHUNKS="{\"projects\":$CHUNKS}" >> "$GITHUB_OUTPUT"
+  #         fi
+
+
+  #     - name: Prepare docker build targets
+  #       id: build_map
+  #       run: |
+  #         set -euo pipefail
+  #         CHUNKS="$(./scripts/ci/generate-build-chunks.sh docker-express docker-next docker-static docker-playwright docker-jest)"
+  #         echo "CHUNKS: '$CHUNKS'"
+  #         if [[ "$CHUNKS" != "[]" ]]; then
+  #           echo BUILD_CHUNKS="$CHUNKS"
+  #           echo BUILD_CHUNKS="$CHUNKS" >> "$GITHUB_OUTPUT"
+  #         fi
+
+  #     - name: Gather unaffected docker images
+  #       id: unaffected
+  #       run: |
+  #         set -euo pipefail
+  #         UNAFFECTED="$(./scripts/ci/list-unaffected.sh docker-next docker-express docker-static docker-playwright docker-jest)"
+  #         echo UNAFFECTED="$UNAFFECTED" >> "$GITHUB_OUTPUT"
+
+  #     - name: check pre-release
+  #       if: needs.pre-checks.outputs.PRE_RELEASE == 'true'
+  #       run: |
+  #         echo "AFFECTED_ALL=7913-$GIT_BRANCH"
+  #         echo "AFFECTED_ALL=7913-$GIT_BRANCH" >> "$GITHUB_ENV"
+
+  #     - name: Prepare deployment targets
+  #       id: deploy_map
+  #       if: needs.pre-checks.outputs.PRE_CHECK != 'push'
+  #       run: |
+  #         set -euo pipefail
+  #         export BASE="$(git merge-base HEAD "$GITHUB_BASE_REF")"
+  #         echo $BASE
+  #         CHUNKS="$(./scripts/ci/generate-build-chunks.sh docker-express docker-next docker-static docker-playwright docker-jest)"
+  #         echo "CHUNKS: '$CHUNKS'"
+  #         if [[ "$CHUNKS" != "[]" ]]; then
+  #           echo "IMAGES="$(echo "$CHUNKS" | jq '.[] | fromjson | .projects' -r | tr '\n' ',')"" >> "$GITHUB_OUTPUT"
+  #         fi
 
   # tests:
   #   needs:
