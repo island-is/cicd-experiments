@@ -1,0 +1,54 @@
+name: Monorepo pipeline - build and deploy
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+defaults:
+  run:
+    shell: bash
+concurrency:
+  group: push-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+jobs:
+  create-release-pr:
+    name: Create a PR to release branch
+    runs-on: ubuntu-latest
+    outputs:
+      BRANCHES: ${{ steps.gather_branches.outputs.BRANCHES }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Gather branches
+        id: gather_branches
+        run: |
+          echo BRANCHES=$(git branch -r) >> "$GITHUB_OUTPUT"
+      - uses: actions/github-script@v7
+        name: Find Latest Release Branch
+        id: get_latest_release
+        with:
+          script: |
+            const releases = "${{ steps.gather_branches.outputs.BRANCHES }}"
+            return releases
+              .trim()
+              .split(' ')
+              .map((release) => release.replace('origin/release/', ''))
+              .filter((release) => /^\d+\.\d+\.\d+$/.test(release))
+              .sort((a, b) => {
+                  const [aMajor, aMinor, aPatch] = a.split('.').map(Number)
+                  const [bMajor, bMinor, bPatch] = b.split('.').map(Number)
+
+                  if (aMajor !== bMajor) {
+                      return bMajor - aMajor
+                  } else if (aMinor !== bMinor) {
+                      return bMinor - aMinor
+                  } else {
+                      return bPatch - aPatch
+                  }
+              })[0]
+      - run: "echo 'latest release: ${{ steps.get_latest_release.outputs.result }}'"
+      - run: "echo 'merge commit sha: ${{ github.merge_commit_sha }}'"
+
