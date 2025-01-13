@@ -55,5 +55,5 @@ jobs:
                   }
               })[0]
       - run: "echo 'latest release: ${{ steps.get_latest_release.outputs.result }}'"
-      - run: "echo 'merge commit sha: ${{ github.merge_commit_sha }}'"
+      - run: "echo 'merge commit sha: ${{ github.pull_request.merge_commit_sha }}'"
 
