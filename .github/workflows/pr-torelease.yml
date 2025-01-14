@@ -1,4 +1,4 @@
-name: Monorepo pipeline - build and deploy
+name: Create release PR
 
 on:
   workflow_dispatch:
@@ -58,5 +58,3 @@ jobs:
       - run: |
           git checkout ${{ github.event.pull_request.merge_commit_sha }}
           git push --set-upstream unicorn/${{ github.event.pull_request.merge_commit_sha }}
-
-
