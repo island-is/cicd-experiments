@@ -5,6 +5,8 @@ on:
   pull_request:
     types:
       - closed
+    branches:
+      - '!release/**'
 defaults:
   run:
     shell: bash
