@@ -61,6 +61,8 @@ jobs:
         run: |
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
           git config --global user.name "${{ github.actor }} (automated)"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "${{ github.actor }} (automated)"
           git checkout release/${{ steps.get_latest_release.outputs.result }}
           git checkout -b unicorn/${{ github.event.pull_request.merge_commit_sha }}
           echo "cherry-pick -x ${{ github.event.pull_request.merge_commit_sha }}"
@@ -70,10 +72,10 @@ jobs:
           echo "committing"
           git commit -m "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}"
           echo "pushing"
+          echo "pushing"
           git push --set-upstream origin unicorn/${{ github.event.pull_request.merge_commit_sha }}
           gh pr create -B \
             release/${{ steps.get_latest_release.outputs.result }} \
             -H unicorn/${{ github.event.pull_request.merge_commit_sha }} \
             --title "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}" \
             --body "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}"
-
