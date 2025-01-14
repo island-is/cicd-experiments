@@ -2,7 +2,6 @@ name: Create release PR
 
 on:
   workflow_dispatch:
-  push:
   pull_request:
     types:
       - closed
