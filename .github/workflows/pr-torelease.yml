@@ -68,4 +68,5 @@ jobs:
           git checkout -b unicorn/${{ github.event.pull_request.merge_commit_sha }}
           git commit -m "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}"
           git push --set-upstream origin unicorn/${{ github.event.pull_request.merge_commit_sha }}
+          echo "new branch created"
           gh pr create -B release/$LAST_RELEASE -H unicorn/${{ github.event.pull_request.merge_commit_sha }} --title "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}" --body "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}"
