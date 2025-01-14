@@ -70,7 +70,8 @@ jobs:
           git status
           git checkout -b unicorn/${{ github.event.pull_request.merge_commit_sha }}
           git status
-          git commit -m "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}"
+          echo "git commit -am 'Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}'" >> latestunicorn.txt
+          git commit -am "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}"
           git status
           git push --set-upstream origin unicorn/${{ github.event.pull_request.merge_commit_sha }}
           git status
