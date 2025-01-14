@@ -64,7 +64,7 @@ jobs:
           git checkout release/${{ steps.get_latest_release.outputs.result }}
           git checkout -b unicorn/${{ github.event.pull_request.merge_commit_sha }}
           echo "cherry-pick -x ${{ github.event.pull_request.merge_commit_sha }}"
-          git cherry-pick -x ${{ github.event.pull_request.merge_commit_sha }}
+          git cherry-pick -x ${{ github.event.pull_request.merge_commit_sha }} --strategy-option theirs
           echo "adding"
           git add .
           echo "committing"
