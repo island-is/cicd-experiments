@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       BRANCHES: ${{ steps.gather_branches.outputs.BRANCHES }}
+      LATEST_RELEASE: ${{ steps.gather_branches.outputs.BRANCHES }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -53,7 +54,11 @@ jobs:
                       return bPatch - aPatch
                   }
               })[0]
-      - run: "echo 'latest release: ${{ steps.get_latest_release.outputs.result }}'"
+      - name: Prune release name
+        id: latest_release
+        run: |
+          echo 'latest release: ${{ steps.get_latest_release.outputs.result }}'
+          echo LATEST_RELEASE=$(echo ${{ steps.get_latest_release.outputs.result }} | sed 's/"//g') >> "$GITHUB_OUTPUT"
       - run: "echo 'merge commit sha: ${{ github.event.pull_request.merge_commit_sha }}'"
       - name: Create a PR
         env:
@@ -61,9 +66,8 @@ jobs:
         run: |
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
           git config --global user.name "${{ github.actor }} (automated)"
-          LAST_RELEASE=$(echo "${{ steps.get_latest_release.outputs.result }}" | sed 's/"//g')
           git status
-          git checkout release/$LAST_RELEASE
+          git checkout release/${{ steps.latest_release.outputs.LATEST_RELEASE }}
           git status
           echo "cherry-pick -x ${{ github.event.pull_request.merge_commit_sha }}"
           git cherry-pick -x ${{ github.event.pull_request.merge_commit_sha }} --strategy-option theirs
@@ -76,4 +80,4 @@ jobs:
           git push --set-upstream origin unicorn/${{ github.event.pull_request.merge_commit_sha }}
           git status
           echo "new branch created"
-          gh pr create -B release/$LAST_RELEASE -H unicorn/${{ github.event.pull_request.merge_commit_sha }} --title "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}" --body "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}"
+          gh pr create -B release/${{ steps.latest_release.outputs.LATEST_RELEASE }} -H unicorn/${{ github.event.pull_request.merge_commit_sha }} --title "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}" --body "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}"
