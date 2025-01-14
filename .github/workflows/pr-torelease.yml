@@ -2,6 +2,7 @@ name: Create release PR
 
 on:
   workflow_dispatch:
+  push:
   pull_request:
     types:
       - closed
@@ -56,8 +57,7 @@ jobs:
       - run: "echo 'latest release: ${{ steps.get_latest_release.outputs.result }}'"
       - run: "echo 'merge commit sha: ${{ github.event.pull_request.merge_commit_sha }}'"
       - name: Create a PR
-
-      env:
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git checkout release/${{ steps.get_latest_release.outputs.result }}
