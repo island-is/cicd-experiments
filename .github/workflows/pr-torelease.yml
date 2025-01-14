@@ -4,8 +4,7 @@ on:
   workflow_dispatch:
   pull_request:
     types:
-      - opened
-      - synchronize
+      - closed
 defaults:
   run:
     shell: bash
@@ -56,4 +55,8 @@ jobs:
               })[0]
       - run: "echo 'latest release: ${{ steps.get_latest_release.outputs.result }}'"
       - run: "echo 'merge commit sha: ${{ github.event.pull_request.merge_commit_sha }}'"
+      - run: |
+          git checkout ${{ github.event.pull_request.merge_commit_sha }}
+          git push --set-upstream unicorn/${{ github.event.pull_request.merge_commit_sha }}
+
 
