@@ -18,7 +18,7 @@ jobs:
     outputs:
       BRANCHES: ${{ steps.gather_branches.outputs.BRANCHES }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Dump GitHub context
@@ -62,11 +62,17 @@ jobs:
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
           git config --global user.name "${{ github.actor }} (automated)"
           LAST_RELEASE=$(echo "${{ steps.get_latest_release.outputs.result }}" | sed 's/"//g')
+          git status
           git checkout release/$LAST_RELEASE
+          git status
           echo "cherry-pick -x ${{ github.event.pull_request.merge_commit_sha }}"
           git cherry-pick -x ${{ github.event.pull_request.merge_commit_sha }} --strategy-option theirs
+          git status
           git checkout -b unicorn/${{ github.event.pull_request.merge_commit_sha }}
+          git status
           git commit -m "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}"
+          git status
           git push --set-upstream origin unicorn/${{ github.event.pull_request.merge_commit_sha }}
+          git status
           echo "new branch created"
           gh pr create -B release/$LAST_RELEASE -H unicorn/${{ github.event.pull_request.merge_commit_sha }} --title "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}" --body "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}"
