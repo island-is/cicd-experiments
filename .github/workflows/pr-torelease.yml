@@ -59,6 +59,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          git config --global user.email "ci@andes.is"
+          git config --global user.name "Unicorn CI"
           git checkout release/${{ steps.get_latest_release.outputs.result }}
           git checkout -b unicorn/${{ github.event.pull_request.merge_commit_sha }}
           git cherry-pick -x ${{ github.event.pull_request.merge_commit_sha }}
