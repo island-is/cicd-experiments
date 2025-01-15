@@ -1,1 +1,2 @@
+Another feature
 Hello - this is a feature
