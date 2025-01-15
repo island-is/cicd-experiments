@@ -20,6 +20,8 @@ jobs:
       BRANCHES: ${{ steps.gather_branches.outputs.BRANCHES }}
       LATEST_RELEASE: ${{ steps.gather_branches.outputs.BRANCHES }}
     steps:
+      - name: Debug
+        run: echo "${{ github.ref }}"
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
