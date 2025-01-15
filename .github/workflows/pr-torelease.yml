@@ -29,14 +29,14 @@ jobs:
           script: |
             console.log("${{ github.ref }}")
             console.log("${{ github.ref }}" == "refs/heads/main")
-      # - uses: actions/checkout@v4
-      #   with:
-      #     fetch-depth: 0
-      # - name: Dump GitHub context
-      #   env:
-      #     GITHUB_CONTEXT: ${{ toJson(github) }}
-      #   run: |
-      #     echo "$GITHUB_CONTEXT"
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo "$GITHUB_CONTEXT"
       # - name: Gather branches
       #   id: gather_branches
       #   run: |
