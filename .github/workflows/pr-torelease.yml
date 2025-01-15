@@ -26,7 +26,7 @@ jobs:
         with:
           script: |
             console.log("${{ github.ref }}")
-            console.log("${{ github.ref }}" == "refs/head/main")
+            console.log("${{ github.ref }}" == "refs/heads/main")
       # - uses: actions/checkout@v4
       #   with:
       #     fetch-depth: 0
