@@ -7,6 +7,7 @@ on:
     types:
       - closed
       - opened
+      - synchronize
 defaults:
   run:
     shell: bash
