@@ -18,7 +18,7 @@ jobs:
   create-release-pr:
     name: Create a PR to release branch
     runs-on: ubuntu-latest
-    if: ${{ github.ref }} == "refs/heads/main"
+    if: ${{ github.event.pull_request.base.ref }} == "main"
     outputs:
       BRANCHES: ${{ steps.gather_branches.outputs.BRANCHES }}
       LATEST_RELEASE: ${{ steps.gather_branches.outputs.BRANCHES }}
@@ -37,49 +37,49 @@ jobs:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: |
           echo "$GITHUB_CONTEXT"
-      # - name: Gather branches
-      #   id: gather_branches
-      #   run: |
-      #     echo BRANCHES=$(git branch -r) >> "$GITHUB_OUTPUT"
-      # - uses: actions/github-script@v7
-      #   name: Find Latest Release Branch
-      #   id: get_latest_release
-      #   with:
-      #     script: |
-      #       const releases = "${{ steps.gather_branches.outputs.BRANCHES }}"
-      #       return releases
-      #         .trim()
-      #         .split(' ')
-      #         .map((release) => release.replace('origin/release/', ''))
-      #         .filter((release) => /^\d+\.\d+\.\d+$/.test(release))
-      #         .sort((a, b) => {
-      #             const [aMajor, aMinor, aPatch] = a.split('.').map(Number)
-      #             const [bMajor, bMinor, bPatch] = b.split('.').map(Number)
+      - name: Gather branches
+        id: gather_branches
+        run: |
+          echo BRANCHES=$(git branch -r) >> "$GITHUB_OUTPUT"
+      - uses: actions/github-script@v7
+        name: Find Latest Release Branch
+        id: get_latest_release
+        with:
+          script: |
+            const releases = "${{ steps.gather_branches.outputs.BRANCHES }}"
+            return releases
+              .trim()
+              .split(' ')
+              .map((release) => release.replace('origin/release/', ''))
+              .filter((release) => /^\d+\.\d+\.\d+$/.test(release))
+              .sort((a, b) => {
+                  const [aMajor, aMinor, aPatch] = a.split('.').map(Number)
+                  const [bMajor, bMinor, bPatch] = b.split('.').map(Number)
 
-      #             if (aMajor !== bMajor) {
-      #                 return bMajor - aMajor
-      #             } else if (aMinor !== bMinor) {
-      #                 return bMinor - aMinor
-      #             } else {
-      #                 return bPatch - aPatch
-      #             }
-      #         })[0]
-      # - name: Prune release name
-      #   id: latest_release
-      #   run: |
-      #     echo 'latest release: ${{ steps.get_latest_release.outputs.result }}'
-      #     echo LATEST_RELEASE=$(echo ${{ steps.get_latest_release.outputs.result }} | sed 's/"//g') >> "$GITHUB_OUTPUT"
-      # - run: "echo 'merge commit sha: ${{ github.event.pull_request.merge_commit_sha }}'"
-      # - name: Create a PR
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: |
-      #     git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-      #     git config --global user.name "${{ github.actor }} (automated)"
-      #     git checkout release/${{ steps.latest_release.outputs.LATEST_RELEASE }}
-      #     git cherry-pick -x ${{ github.event.pull_request.merge_commit_sha }} --strategy-option theirs
-      #     git checkout -b unicorn/${{ github.event.pull_request.merge_commit_sha }}
-      #     git commit --allow-empty -am "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}"
-      #     git push --set-upstream origin unicorn/${{ github.event.pull_request.merge_commit_sha }}
-      #     echo "new branch created"
-      #     gh pr create -B release/${{ steps.latest_release.outputs.LATEST_RELEASE }} -H unicorn/${{ github.event.pull_request.merge_commit_sha }} --title "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}" --body "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}"
+                  if (aMajor !== bMajor) {
+                      return bMajor - aMajor
+                  } else if (aMinor !== bMinor) {
+                      return bMinor - aMinor
+                  } else {
+                      return bPatch - aPatch
+                  }
+              })[0]
+      - name: Prune release name
+        id: latest_release
+        run: |
+          echo 'latest release: ${{ steps.get_latest_release.outputs.result }}'
+          echo LATEST_RELEASE=$(echo ${{ steps.get_latest_release.outputs.result }} | sed 's/"//g') >> "$GITHUB_OUTPUT"
+      - run: "echo 'merge commit sha: ${{ github.event.pull_request.merge_commit_sha }}'"
+      - name: Create a PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "${{ github.actor }} (automated)"
+          git checkout release/${{ steps.latest_release.outputs.LATEST_RELEASE }}
+          git cherry-pick -x ${{ github.event.pull_request.merge_commit_sha }} --strategy-option theirs
+          git checkout -b unicorn/${{ github.event.pull_request.merge_commit_sha }}
+          git commit --allow-empty -am "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}"
+          git push --set-upstream origin unicorn/${{ github.event.pull_request.merge_commit_sha }}
+          echo "new branch created"
+          gh pr create -B release/${{ steps.latest_release.outputs.LATEST_RELEASE }} -H unicorn/${{ github.event.pull_request.merge_commit_sha }} --title "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}" --body "Automated cherry-pick of ${{ github.event.pull_request.merge_commit_sha }}"
