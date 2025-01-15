@@ -15,6 +15,7 @@ jobs:
   create-release-pr:
     name: Create a PR to release branch
     runs-on: ubuntu-latest
+    if: ${{ github.ref }} == "refs/head/main"
     outputs:
       BRANCHES: ${{ steps.gather_branches.outputs.BRANCHES }}
       LATEST_RELEASE: ${{ steps.gather_branches.outputs.BRANCHES }}
