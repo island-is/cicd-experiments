@@ -2,5 +2,5 @@ Another feature
 Hello - this is a feature
 The struggle never ends
 
-HalloGreatStuff-1736936419
+This will be in release 1.0.2
 
