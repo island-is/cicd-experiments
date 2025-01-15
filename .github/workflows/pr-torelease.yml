@@ -23,7 +23,7 @@ jobs:
     steps:
       - name: Debug
         run: |
-          echo "${{ github.ref }}"
+          echo "${{ github.ref }}" == "refs/head/main"
       # - uses: actions/checkout@v4
       #   with:
       #     fetch-depth: 0
