@@ -1,22 +1,18 @@
-# name: Monorepo pipeline - build and deploy
+name: Monorepo pipeline - build and deploy
 
-# on:
-#   push:
-#     branches:
-#       - 'main'
-#       - 'release/**'
-#       - 'pre-release/**'
-#   workflow_dispatch:
-#   create:
-#   pull_request:
-#     types:
-#       - opened
-#       - synchronize
-#       - labeled
+on:
+  push:
+    branches:
+      - 'main'
+      - 'release/**'
+      - 'pre-release/**'
+  workflow_dispatch:
+  create:
 
-# defaults:
-#   run:
-#     shell: bash
+
+defaults:
+  run:
+    shell: bash
 
 # env:
 #   DOCKER_REGISTRY: some-registry
@@ -25,7 +21,17 @@
 #   COMPOSE_HTTP_TIMEOUT: 180
 #   NX_AFFECTED_ALL: ${{ contains(github.event.pull_request.labels.*.name, 'nx-affected-all') }}
 
-# jobs:
+jobs:
+  debug:
+    name: Dump Github context
+    runs-on: github-context
+    env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+    steps:
+      - name: Get git branch
+        run: |
+            echo "$GITHUB_CONTEXT"
+
 #   pre-checks:
 #     name: Check if job should run
 #     runs-on: ubuntu-latest
