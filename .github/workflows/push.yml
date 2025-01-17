@@ -30,7 +30,8 @@ jobs:
     steps:
       - name: Get git branch
         run: |
-            echo "$GITHUB_CONTEXT"
+          echo "Asserting that merge queue actually pushes to main"
+          echo "$GITHUB_CONTEXT"
 
 #   pre-checks:
 #     name: Check if job should run
