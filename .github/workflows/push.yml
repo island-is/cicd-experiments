@@ -26,9 +26,6 @@ jobs:
     env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
     steps:
-    - uses: actions/setup-node@v4
-      with:
-        node-version: '20'
 
     - name: Get git branch
       run: |
