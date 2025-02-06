@@ -13,11 +13,10 @@ defaults:
 env:
   DOCKER_REGISTRY: some-registry
 
-
 jobs:
   debug:
     name: Dump Github context
-    runs-on: github-context
+    runs-on: ubuntu-latest
     env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
     steps:
