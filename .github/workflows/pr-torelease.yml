@@ -2,9 +2,9 @@ name: Create release PR
 
 on:
   workflow_dispatch:
-  pull_request:
-    types:
-      - closed
+  # pull_request:
+  #   types:
+  #     - closed
 defaults:
   run:
     shell: bash
@@ -23,44 +23,44 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: |
-          echo "$GITHUB_CONTEXT"
-      - name: Gather branches
-        id: gather_branches
-        run: |
-          echo BRANCHES=$(git branch -r) >> "$GITHUB_OUTPUT"
-      - uses: actions/github-script@v7
-        name: Find Latest Release Branch
-        id: get_latest_release
-        with:
-          script: |
-            const releases = "${{ steps.gather_branches.outputs.BRANCHES }}"
-            return releases
-              .trim()
-              .split(' ')
-              .map((release) => release.replace('origin/release/', ''))
-              .filter((release) => /^\d+\.\d+\.\d+$/.test(release))
-              .sort((a, b) => {
-                  const [aMajor, aMinor, aPatch] = a.split('.').map(Number)
-                  const [bMajor, bMinor, bPatch] = b.split('.').map(Number)
+      # - name: Dump GitHub context
+      #   env:
+      #     GITHUB_CONTEXT: ${{ toJson(github) }}
+      #   run: |
+      #     echo "$GITHUB_CONTEXT"
+      # - name: Gather branches
+      #   id: gather_branches
+      #   run: |
+      #     echo BRANCHES=$(git branch -r) >> "$GITHUB_OUTPUT"
+      # - uses: actions/github-script@v7
+      #   name: Find Latest Release Branch
+      #   id: get_latest_release
+      #   with:
+      #     script: |
+      #       const releases = "${{ steps.gather_branches.outputs.BRANCHES }}"
+      #       return releases
+      #         .trim()
+      #         .split(' ')
+      #         .map((release) => release.replace('origin/release/', ''))
+      #         .filter((release) => /^\d+\.\d+\.\d+$/.test(release))
+      #         .sort((a, b) => {
+      #             const [aMajor, aMinor, aPatch] = a.split('.').map(Number)
+      #             const [bMajor, bMinor, bPatch] = b.split('.').map(Number)
 
-                  if (aMajor !== bMajor) {
-                      return bMajor - aMajor
-                  } else if (aMinor !== bMinor) {
-                      return bMinor - aMinor
-                  } else {
-                      return bPatch - aPatch
-                  }
-              })[0]
-      - name: Prune release name
-        id: latest_release
-        run: |
-          echo 'latest release: ${{ steps.get_latest_release.outputs.result }}'
-          echo LATEST_RELEASE=$(echo ${{ steps.get_latest_release.outputs.result }} | sed 's/"//g') >> "$GITHUB_OUTPUT"
-      - run: "echo 'merge commit sha: ${{ github.event.pull_request.merge_commit_sha }}'"
+      #             if (aMajor !== bMajor) {
+      #                 return bMajor - aMajor
+      #             } else if (aMinor !== bMinor) {
+      #                 return bMinor - aMinor
+      #             } else {
+      #                 return bPatch - aPatch
+      #             }
+      #         })[0]
+      # - name: Prune release name
+      #   id: latest_release
+      #   run: |
+      #     echo 'latest release: ${{ steps.get_latest_release.outputs.result }}'
+      #     echo LATEST_RELEASE=$(echo ${{ steps.get_latest_release.outputs.result }} | sed 's/"//g') >> "$GITHUB_OUTPUT"
+      # - run: "echo 'merge commit sha: ${{ github.event.pull_request.merge_commit_sha }}'"
       # - name: Create a PR
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
