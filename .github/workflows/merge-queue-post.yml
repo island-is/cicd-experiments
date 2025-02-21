@@ -16,11 +16,13 @@ jobs:
     # (https://medium.com/@kojoru/how-to-set-up-merge-queues-in-github-actions-59381e5f435a)
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: |
-          echo "$GITHUB_CONTEXT"
-      - name: Merge queue pre-check
-        run: |
-          sleep 15 && echo "Putting stuff in merge queue now that I am awake"
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+      - run: |
+          corepack enable
+          yarn install
+          yarn node ci/test.mjs
