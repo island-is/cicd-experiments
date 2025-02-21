@@ -2,14 +2,15 @@ import github from "@actions/github";
 
 const context = github.context;
 const eventName = context.eventName;
-const targetBranch = getTargetBranch();
-const typeOfDeployment = getTypeOfDeployment();
-
 console.log({ context, eventName });
 console.log({
     targetBranch,
     typeOfDeployment
 })
+
+const targetBranch = getTargetBranch();
+const typeOfDeployment = getTypeOfDeployment();
+
 
 
 function getTypeOfDeployment() {
@@ -42,19 +43,10 @@ function getTargetBranch() {
     if (eventName === "push") {
         return context.ref?.replace('refs/heads/', '');
     }
-
-    if (eventName === "workflow_run") {
-        if (context.payload.workflow_run.event === 'pull_request' &&
-            context?.payload?.workflow_run?.pull_requests?.length > 0) {
-            return context.payload.workflow_run.pull_requests[0].base.ref;
-        }
-
-        if (context.payload.workflow_run.merge_queue_entry) {
-            return context.payload.workflow_run.merge_queue_entry.base_ref;
-        }
-        return context.payload.workflow_run.head_branch;
+    if (eventName === "merge_group") {
+        throw new Error(`Not sure how to handle event type: ${eventName}`);
     }
-
+    
     if (process.env.GITHUB_BASE_REF) {
         return process.env.GITHUB_BASE_REF;
     }
