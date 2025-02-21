@@ -6,6 +6,7 @@ const eventName = context.eventName;
 const targetBranch = getTargetBranch();
 const typeOfDeployment = getTypeOfDeployment();
 
+console.log({ context, eventName });
 console.log({
     targetBranch,
     typeOfDeployment
