@@ -24,7 +24,7 @@ function getArtifactname() {
             context.payload.merge_group.base_sha,
             context.sha,
         ]
-        console.log(`sha`);
+        console.log(sha);
         return `hehe`;
     }
 
