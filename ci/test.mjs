@@ -2,14 +2,14 @@ import github from "@actions/github";
 
 const context = github.context;
 const eventName = context.eventName;
-console.log({ context: JSON.stringify(context, null, 2), eventName });
+
+const targetBranch = getTargetBranch();
+const typeOfDeployment = getTypeOfDeployment();
+
 console.log({
     targetBranch,
     typeOfDeployment
 })
-
-const targetBranch = getTargetBranch();
-const typeOfDeployment = getTypeOfDeployment();
 
 
 
@@ -39,7 +39,6 @@ function getTargetBranch() {
     if (eventName === "pull_request") {
         return context.payload.pull_request?.base?.ref;
     }
-
     if (eventName === "push") {
         return context.ref?.replace('refs/heads/', '');
     }
