@@ -5,12 +5,31 @@ const eventName = context.eventName;
 
 const targetBranch = getTargetBranch();
 const typeOfDeployment = getTypeOfDeployment();
+const artifactName = getArtifactname();
 
 console.log({
     targetBranch,
-    typeOfDeployment
+    typeOfDeployment,
+    artifactName
 })
 
+
+function getArtifactname() {
+    if (eventName === "pull_request") {
+        return `pr-${context.payload.pull_request.number}`;
+    }
+    if (eventName === "merge_group") {
+        const sha = [
+            context.payload.merge_group.head_sha,
+            context.payload.merge_group.base_sha,
+            context.sha,
+        ]
+        console.log(`sha`);
+        return `hehe`;
+    }
+
+    throw new Error(`Unable to determine artifact name for event type: ${eventName}`);
+}
 
 
 function getTypeOfDeployment() {
@@ -39,16 +58,9 @@ function getTargetBranch() {
     if (eventName === "pull_request") {
         return context.payload.pull_request?.base?.ref;
     }
-    if (eventName === "push") {
-        return context.ref?.replace('refs/heads/', '');
-    }
     if (eventName === "merge_group") {
         return context.payload.merge_group.base_ref.replace('refs/heads/', '');
     }
     
-    if (process.env.GITHUB_BASE_REF) {
-        return process.env.GITHUB_BASE_REF;
-    }
-
     throw new Error(`Unable to determine target branch for event type: ${eventName}`);
 }
