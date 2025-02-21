@@ -25,4 +25,4 @@ jobs:
       - run: |
           corepack enable
           yarn install
-          node ci/test.mjs
+          yarn node ci/test.mjs
