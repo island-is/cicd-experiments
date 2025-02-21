@@ -22,7 +22,13 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '20'
-      - run: |
+      - name: Prepare
+        id: prepare 
+        run: |
           corepack enable
           yarn install
           yarn node ci/test.mjs
+      - name: Echo output
+        run: |
+          echo ${{ steps.prepare.outputs.ARTIFACT_NAME }}
+          echo ${{ steps.prepare.outputs.TAG_NAME }}
