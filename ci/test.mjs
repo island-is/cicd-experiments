@@ -2,7 +2,7 @@ import github from "@actions/github";
 
 const context = github.context;
 const eventName = context.eventName;
-console.log({ context, eventName });
+console.log({ context: JSON.stringify(context, null, 2), eventName });
 console.log({
     targetBranch,
     typeOfDeployment
