@@ -44,7 +44,7 @@ function getTargetBranch() {
         return context.ref?.replace('refs/heads/', '');
     }
     if (eventName === "merge_group") {
-        throw new Error(`Not sure how to handle event type: ${eventName}`);
+        return context.payload.merge_group.base_ref.replace('refs/heads/', '');
     }
     
     if (process.env.GITHUB_BASE_REF) {
