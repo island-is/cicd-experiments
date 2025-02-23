@@ -3,6 +3,7 @@
   "packageManager": "yarn@4.2.2",
   "devDependencies": {
     "@actions/core": "^1.11.1",
-    "@actions/github": "^6.0.0"
+    "@actions/github": "^6.0.0",
+    "@types/node": "^22.13.4"
   }
 }
