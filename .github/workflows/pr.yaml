@@ -23,6 +23,7 @@ jobs:
                 matrix-key: ${{ matrix.bull }}
                 outputs: |-
                     hehe: ${{ matrix.bull }}
+                    ble: "bara prufa"
     bull:
         runs-on: ubuntu-latest
         needs: 
