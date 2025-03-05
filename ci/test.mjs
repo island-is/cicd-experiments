@@ -1,3 +1,4 @@
+// @ts-check
 import github from "@actions/github";
 import core from "@actions/core";
 
@@ -14,7 +15,7 @@ core.setOutput("ARTIFACT_NAME", artifactName);
 core.setOutput("TAG_NAME", tagName);
 
 function getTagname() {
-    if (eventName === "pull_request") {
+    if (eventName === "pull_request" && context.payload.pull_request?.number) {
         return `pr-${context.payload.pull_request.number}-${randomTag}`;
     }
     if (eventName === "merge_group") {
@@ -29,9 +30,8 @@ function getTagname() {
 
 }
 
-
 function getArtifactname() {
-    if (eventName === "pull_request") {
+    if (eventName === "pull_request" && context.payload.pull_request?.number) {
         return `pr-${context.payload.pull_request.number}`;
     }
     if (eventName === "merge_group") {
@@ -71,7 +71,7 @@ function getTypeOfDeployment() {
 
 
 function getTargetBranch() {
-    if (eventName === "pull_request") {
+    if (eventName === "pull_request" && context.payload?.pull_request?.base.ref) {
         return context.payload.pull_request.base.ref;
     }
     if (eventName === "merge_group") {
